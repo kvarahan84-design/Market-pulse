@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Market Pulse — Live Movers & Signals</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body class="viz-root">
+
+  {% if not api_key_configured %}
+  <div class="key-banner">
+    No Finnhub API key configured yet. Get a free key at
+    <a href="https://finnhub.io/register" target="_blank" rel="noopener">finnhub.io/register</a>,
+    then set it as the <code>FINNHUB_API_KEY</code> environment variable and restart the server.
+  </div>
+  {% endif %}
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Market Pulse</h1>
+      <span id="market-status" class="status-pill status-unknown">checking market…</span>
+    </div>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="ghost-btn" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
+      <span id="last-updated" class="muted small">waiting for first update…</span>
+    </div>
+  </header>
+
+  <div class="filter-row">
+    <div class="search-wrap">
+      <input id="search-box" type="text" placeholder="Filter or type any ticker… (e.g. NVDA, TQQQ)" autocomplete="off" />
+      <div id="search-status" class="small muted hidden"></div>
+    </div>
+    <div class="chip-group" role="group" aria-label="View filters">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="movers">🔥 Top movers</button>
+      <button class="chip" data-filter="etf">ETFs only</button>
+      <button class="chip" data-filter="stocks">Stocks only</button>
+      <button class="chip" data-filter="gainers">Gainers</button>
+      <button class="chip" data-filter="losers">Losers</button>
+    </div>
+    <div class="sort-wrap">
+      <label for="sort-select" class="muted small">Sort</label>
+      <select id="sort-select">
+        <option value="movers">Biggest movers</option>
+        <option value="gainers">Top gainers first</option>
+        <option value="losers">Top losers first</option>
+        <option value="alpha">Alphabetical</option>
+      </select>
+    </div>
+    <div class="legend-inline">
+      <span class="legend-item"><i class="dot dot-good"></i> Up</span>
+      <span class="legend-item"><i class="dot dot-critical"></i> Down</span>
+    </div>
+  </div>
+
+  <main class="layout">
+    <section class="grid-panel">
+      <div id="ticker-grid" class="ticker-grid" aria-live="polite"></div>
+      <div id="empty-state" class="empty-state hidden">No tickers match this filter.</div>
+    </section>
+
+    <aside class="side-panel">
+      <section class="watchlist-panel">
+        <h2>Bullish now</h2>
+        <p class="muted small">Tickers currently flagged BUY, strongest signal first. Click one to open its chart.</p>
+        <div id="bullish-list" class="signal-ticker-list"></div>
+        <div id="bullish-empty" class="signal-list-empty muted small hidden">No BUY signals right now.</div>
+      </section>
+
+      <section class="watchlist-panel">
+        <h2>Bearish now</h2>
+        <p class="muted small">Tickers currently flagged SELL, strongest signal first.</p>
+        <div id="bearish-list" class="signal-ticker-list"></div>
+        <div id="bearish-empty" class="signal-list-empty muted small hidden">No SELL signals right now.</div>
+      </section>
+
+      <section class="watchlist-panel">
+        <h2>Market news</h2>
+        <p class="muted small">
+          Official public WSJ/Dow Jones RSS headlines — not per-ticker, general market news.
+          Full articles open in a new tab and may need your own WSJ subscription there.
+        </p>
+        <div id="news-list" class="news-list"></div>
+        <div id="news-empty" class="signal-list-empty muted small hidden">No headlines yet.</div>
+      </section>
+
+      <section class="signal-panel">
+        <h2>Buy / Sell Signals</h2>
+        <p class="muted small signal-note">
+          Every card flashes <span class="sig-chip sig-chip-buy">BUY</span> or
+          <span class="sig-chip sig-chip-sell">SELL</span> when a rule-based scoring system —
+          moving average crossover, VWAP, RSI, and volume — flips on its 2-minute chart. Hover any
+          badge to see exactly which indicators fired.
+        </p>
+        <div class="signal-legend">
+          <div class="signal-legend-row"><i class="line-swatch line-swatch-fast"></i> Fast MA (EMA)</div>
+          <div class="signal-legend-row"><i class="line-swatch line-swatch-slow"></i> Slow MA (EMA)</div>
+          <div class="signal-legend-row"><i class="line-swatch line-swatch-vwap"></i> VWAP</div>
+          <div class="signal-legend-row"><i class="marker-swatch marker-swatch-buy"></i> Buy signal fired</div>
+          <div class="signal-legend-row"><i class="marker-swatch marker-swatch-sell"></i> Sell signal fired</div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div id="chart-modal" class="chart-modal hidden">
+    <div id="chart-modal-backdrop" class="chart-modal-backdrop"></div>
+    <div class="chart-modal-content">
+      <div class="chart-modal-header">
+        <div>
+          <span id="modal-symbol" class="card-symbol"></span>
+          <span id="modal-etf-badge" class="etf-badge hidden">ETF</span>
+          <span id="modal-name" class="card-name modal-name"></span>
+        </div>
+        <div class="modal-price-row">
+          <span id="modal-price" class="card-price"></span>
+          <span id="modal-delta" class="card-delta"></span>
+        </div>
+        <button id="modal-close" class="ghost-btn" aria-label="Close chart">✕</button>
+      </div>
+      <div class="modal-canvas-wrap">
+        <canvas id="modal-canvas" class="modal-canvas"></canvas>
+        <div id="modal-tooltip" class="modal-tooltip hidden"></div>
+      </div>
+      <div id="modal-signal" class="modal-signal"></div>
+      <div class="modal-hint muted small">Move your mouse over the chart for OHLC detail at each 2-min bar.</div>
+    </div>
+  </div>
+
+  <footer class="footer muted small">
+    Data: Finnhub free tier real-time trades websocket (quotes/candles build live from when this
+    dashboard was started). Buy/sell signals are a rule-based technical-indicator heuristic.
+  </footer>
+
+  <script>
+    window.CANDLE_BUCKET_SECONDS = {{ candle_bucket_seconds }};
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
