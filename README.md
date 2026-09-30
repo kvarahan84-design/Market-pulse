@@ -18,6 +18,16 @@ I built it as a personal trading tool after missing a large intraday move: one s
 - **Restart-safe:** candle history is cached to disk, so restarting doesn't reset the signal warmup.
 - **Light and dark themes.**
 
+## Disclaimer
+
+This project is provided for educational and informational purposes only. It is not financial, investment, or trading advice, and nothing it displays is a recommendation to buy or sell any security.
+
+The software is provided "as is," without warranty of any kind. Market data, signals, and news may be delayed, incomplete, or inaccurate. Third-party data sources (Finnhub, Yahoo Finance, WSJ/Dow Jones RSS) may change or stop working without notice.
+
+Trading involves substantial risk of loss. You are solely responsible for your own trading decisions. The author accepts no liability for any losses, damages, or other consequences arising from use of this software.
+
+Users are responsible for complying with the terms of service of any data provider they use, including Finnhub's API terms.
+
 ## Architecture
 
 A small Python (Flask) backend runs on your machine and serves the page. The backend is needed to hold a persistent websocket connection, pace API calls under free-tier rate limits, and cache data, which a static HTML page can't do safely with an API key.
