@@ -16,6 +16,11 @@ A local web dashboard for traders. Every watched ticker (stocks and ETFs) is sho
 - **Restart-safe:** candle history is cached to disk, so restarting doesn't reset the signal warmup.
 - **Light and dark themes.**
 
+<img width="1891" height="931" alt="image" src="https://github.com/user-attachments/assets/5783553e-d87b-47bc-bec5-bf37ea11da64" />
+<img width="1876" height="912" alt="image" src="https://github.com/user-attachments/assets/fbc7b142-056f-4d67-8a4b-6f8e95c3b68b" />
+<img width="1862" height="736" alt="image" src="https://github.com/user-attachments/assets/2c75c8e4-db6a-4488-96b7-f6a0ec216e4a" />
+
+
 ## Disclaimer
 
 This project is provided for educational and informational purposes only. It is not financial, investment, or trading advice, and nothing it displays is a recommendation to buy or sell any security.
