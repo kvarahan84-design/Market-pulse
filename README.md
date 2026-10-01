@@ -2,8 +2,6 @@
 
 A local web dashboard for day traders. Every watched ticker (stocks and ETFs) is shown at once, each with a live 2-minute candlestick chart and a rule-based BUY/SELL signal. It also auto-discovers today's biggest market movers and shows live market headlines.
 
-I built it as a personal trading tool after missing a large intraday move: one screen showing what's moving, why, and what the indicators say, without clicking into each ticker.
-
 <!-- Add a screenshot: save it as docs/screenshot.png and uncomment the line below -->
 <!-- ![Dashboard screenshot](docs/screenshot.png) -->
 
